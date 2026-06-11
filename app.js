@@ -14,24 +14,14 @@ app.use(express.json());
 app.use(cookieParser());
 
 // --- View routes ---
-app.get('/signup',    (req, res) => {
-    res.sendFile(path.join(__dirname, 'view', 'signup.html'))
-});
-app.get('/login',     (req, res) => {
-    res.sendFile(path.join(__dirname, 'view', 'login.html'))
-});
-app.get('/dashboard', authMiddleware, (req, res) => {
-    res.sendFile(path.join(__dirname, 'view', 'dashboard.html'))
+app.get('/signup',    (req, res) => res.sendFile(path.join(__dirname, 'view', 'signup.html')));
+app.get('/login',     (req, res) => res.sendFile(path.join(__dirname, 'view', 'login.html')));
+app.get('/dashboard', authMiddleware, (req, res) => res.sendFile(path.join(__dirname, 'view', 'dashboard.html')));
+app.get('/admin',     authMiddleware, adminMiddleware, (req, res) => res.sendFile(path.join(__dirname, 'view', 'admin.html')));
 
-});
-app.get('/admin',     authMiddleware, adminMiddleware, (req, res) => {
-    res.sendFile(path.join(__dirname, 'view', 'admin.html'))
-
-});
-
-// --- API routes ---
-app.use('/',       require('./routes/auth'));
-app.use('/tasks',  require('./routes/tasks'));
-app.use('/admin',  require('./routes/admin'));
+// --- API v1 routes ---
+app.use('/api/v1',              require('./routes/auth'));
+app.use('/api/v1/tasks',        require('./routes/tasks'));
+app.use('/api/v1/admin',        require('./routes/admin'));
 
 app.listen(3000, () => console.log("server Started"));

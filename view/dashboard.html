@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f5f5;
+      min-height: 100vh;
+      color: #1a1a1a;
+      padding: 40px 20px;
+    }
+
+    .wrapper { width: 100%; max-width: 600px; margin: 0 auto; }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+
+    header h1 { font-size: 1.4rem; font-weight: 600; }
+
+    header a {
+      font-size: 0.82rem;
+      color: #6b6b6b;
+      text-decoration: none;
+    }
+
+    header a:hover { color: #1a1a1a; }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 28px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 8px 24px rgba(0,0,0,.06);
+      margin-bottom: 24px;
+    }
+
+    .card h2 { font-size: 0.95rem; font-weight: 600; margin-bottom: 16px; }
+
+    .field { margin-bottom: 14px; }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #444;
+      margin-bottom: 6px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px 13px;
+      font-size: 0.9rem;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.15s;
+      color: #1a1a1a;
+      font-family: inherit;
+      resize: none;
+    }
+
+    input:focus, textarea:focus { border-color: #1a1a1a; }
+    input::placeholder, textarea::placeholder { color: #b0b0b0; }
+
+    button {
+      padding: 10px 20px;
+      background: #1a1a1a;
+      color: #fff;
+      font-size: 0.88rem;
+      font-weight: 500;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    button:hover { background: #333; }
+
+    .tasks-header {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #6b6b6b;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .task-item {
+      background: #fff;
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.06);
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .task-body { flex: 1; }
+    .task-title { font-size: 0.92rem; font-weight: 600; margin-bottom: 3px; }
+    .task-desc { font-size: 0.82rem; color: #6b6b6b; }
+
+    .task-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+    .btn-edit, .btn-delete {
+      padding: 6px 13px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-edit { background: #f0f0f0; color: #1a1a1a; }
+    .btn-edit:hover { background: #e0e0e0; }
+    .btn-delete { background: #fff0f0; color: #c0392b; }
+    .btn-delete:hover { background: #fde0e0; }
+
+    .empty {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #aaa;
+      padding: 32px 0;
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.3);
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+      background: #fff;
+      border-radius: 12px;
+      padding: 28px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    }
+
+    .modal h2 { font-size: 0.95rem; font-weight: 600; margin-bottom: 16px; }
+
+    .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+
+    .btn-cancel {
+      background: #f0f0f0;
+      color: #1a1a1a;
+      padding: 10px 20px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .btn-cancel:hover { background: #e0e0e0; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <header>
+      <h1>My Tasks</h1>
+      <a href="/logout">Log out</a>
+    </header>
+
+    <div class="card">
+      <h2>Add a task</h2>
+      <div class="field">
+        <label>Title</label>
+        <input type="text" id="task-title" placeholder="e.g. Buy groceries" />
+      </div>
+      <div class="field">
+        <label>Description <span style="color:#b0b0b0;font-weight:400">(optional)</span></label>
+        <textarea id="task-desc" rows="2" placeholder="Any extra details..."></textarea>
+      </div>
+      <button onclick="addTask()">Add task</button>
+    </div>
+
+    <p class="tasks-header">Tasks</p>
+    <div id="task-list"></div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <h2>Edit task</h2>
+      <div class="field">
+        <label>Title</label>
+        <input type="text" id="edit-title" />
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea id="edit-desc" rows="2"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button onclick="saveEdit()">Save</button>
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+    <script>
+        let editingId = null;
+
+        async function loadTasks() {
+        const res = await fetch('/api/v1/tasks');
+        const tasks = await res.json();
+        renderTasks(tasks);
+        }
+
+        async function addTask() {
+        const title = document.getElementById('task-title').value.trim();
+        const desc  = document.getElementById('task-desc').value.trim();
+        if (!title) return alert("Title is required");
+
+        await fetch('/api/v1/tasks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, desc })
+        });
+
+        document.getElementById('task-title').value = '';
+        document.getElementById('task-desc').value = '';
+        loadTasks();
+        }
+
+        async function deleteTask(id) {
+        await fetch(`/api/v1/tasks/${id}`, { method: 'DELETE' });
+        loadTasks();
+        }
+
+        function openEdit(id, title, desc) {
+        editingId = id;
+        document.getElementById('edit-title').value = title;
+        document.getElementById('edit-desc').value  = desc;
+        document.getElementById('modal').classList.add('active');
+        }
+
+        async function saveEdit() {
+        const title = document.getElementById('edit-title').value.trim();
+        const desc  = document.getElementById('edit-desc').value.trim();
+        if (!title) return alert("Title is required");
+
+        await fetch(`/api/v1/tasks/${editingId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, desc })
+        });
+
+        closeModal();
+        loadTasks();
+        }
+
+        function closeModal() {
+        document.getElementById('modal').classList.remove('active');
+        editingId = null;
+        }
+
+        function renderTasks(tasks) {
+        const list = document.getElementById('task-list');
+        if (!tasks.length) {
+            list.innerHTML = '<p class="empty">No tasks yet. Add one above.</p>';
+            return;
+        }
+        list.innerHTML = tasks.map(t => `
+            <div class="task-item">
+            <div class="task-body">
+                <div class="task-title">${t.title}</div>
+                ${t.desc ? `<div class="task-desc">${t.desc}</div>` : ''}
+            </div>
+            <div class="task-actions">
+                <button class="btn-edit" onclick="openEdit('${t._id}', '${t.title}', '${t.desc}')">Edit</button>
+                <button class="btn-delete" onclick="deleteTask('${t._id}')">Delete</button>
+            </div>
+            </div>
+        `).join('');
+        }
+
+        loadTasks();
+    </script>
+</body>
+</html>
